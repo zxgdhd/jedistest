@@ -120,5 +120,24 @@ public class JedisTool {
 	public static Jedis getJedis(JedisPoolConfig config,String host,int port,int timeout,String auth){
 		return getJedisPool(config,host,port,timeout,auth).getResource();
 	}
+	
+	/**
+	 * @param port
+	 * @return
+	 * getJedisPool
+	 * JedisPool
+	 * woow
+	 * TODO		指定本机redis服务器端口
+	 */
+	public static JedisPool getJedisPool(int port){
+		if(pool==null){
+			synchronized(JedisTool.class){
+				if(pool==null){
+					pool=new JedisPool("127.0.0.1",port);
+				}
+			}
+		}
+		return pool;
+	}
 
 }

@@ -1,9 +1,12 @@
 package com.cssiot.junit;
 
+import java.awt.List;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.junit.Test;
 
+import com.cssiot.redis.Customer;
 import com.cssiot.redis.JedisTool;
 
 import redis.clients.jedis.Jedis;
@@ -44,7 +47,7 @@ public class JedisToolTest {
 		config.setMaxTotal(2000);
 		config.setMaxWaitMillis(10000);
 		config.setTestOnBorrow(true);
-		JedisPool pool = JedisTool.getJedisPool(config, "127.0.0.1", 6379, 10000, null);
+		JedisPool pool = JedisTool.getJedisPool(config, "127.0.0.1", 6380, 10000, null);
 		if (pool != null) {
 			System.out.println("获取JedisPool成功！");
 		}
@@ -136,6 +139,34 @@ public class JedisToolTest {
 		Response<String> name=tx.get("name");
 		tx.exec();
 		System.out.println(name.get());
+	}
+	
+	/**
+	 * 
+	 * testSlaveRedis
+	 * void
+	 * woow
+	 * TODO		复制redis.conf到其他文件夹，修改端口和日志文件位置后，
+	 * 使用命令：redis-server <config文件位置>，即可开启第二个redis服务
+	 */
+	@Test
+	public void testSlaveRedis(){
+		JedisPoolConfig config = new JedisPoolConfig();
+		config.setMaxIdle(10000);
+		config.setMaxTotal(2000);
+		config.setMaxWaitMillis(10000);
+		config.setTestOnBorrow(true);
+		JedisPool poolSlave = JedisTool.getJedisPool(config, "127.0.0.1", 6380, 10000, null);
+		JedisPool poolMain = JedisTool.getJedisPool(config, "127.0.0.1", 6379, 10000, null);
+		if(poolSlave.getResource()!=null&&poolMain.getResource()!=null){
+			System.out.println("slave redis creat success!");
+		}
+	}
+	
+	@Test
+	public void testObject(){
+		Customer customer=new Customer();
+		Jedis jedis=JedisTool.getJedis();
 	}
 
 }
