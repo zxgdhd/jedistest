@@ -2,7 +2,9 @@ package com.cssiot.junit;
 
 import java.awt.List;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.junit.Test;
 
@@ -12,8 +14,10 @@ import com.cssiot.redis.JedisTool;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.Transaction;
 
 public class JedisToolTest {
@@ -100,7 +104,7 @@ public class JedisToolTest {
 	 */
 	@Test
 	public  void jedisPipeLineSync(){
-		JedisPool pool=JedisTool.getJedisPool();
+		JedisPool pool=JedisTool.getJedisPool(6380);
 		Jedis jedis=pool.getResource();
 		Pipeline pipeline=jedis.pipelined();
 		pipeline.set("name", "oh I'm woow,my name is zxgdhd!");
@@ -148,17 +152,19 @@ public class JedisToolTest {
 	 * woow
 	 * TODO		复制redis.conf到其他文件夹，修改端口和日志文件位置后，
 	 * 使用命令：redis-server <config文件位置>，即可开启第二个redis服务
+	 * 这里我配置了6379和6380来模拟主从服务器
 	 */
 	@Test
 	public void testSlaveRedis(){
-		JedisPoolConfig config = new JedisPoolConfig();
+/*		JedisPoolConfig config = new JedisPoolConfig();
 		config.setMaxIdle(10000);
 		config.setMaxTotal(2000);
 		config.setMaxWaitMillis(10000);
 		config.setTestOnBorrow(true);
 		JedisPool poolSlave = JedisTool.getJedisPool(config, "127.0.0.1", 6380, 10000, null);
-		JedisPool poolMain = JedisTool.getJedisPool(config, "127.0.0.1", 6379, 10000, null);
-		if(poolSlave.getResource()!=null&&poolMain.getResource()!=null){
+		JedisPool poolMain = JedisTool.getJedisPool(config, "127.0.0.1", 6379, 10000, null);*/
+		Jedis jedis=JedisTool.getJedisPool(6379).getResource();
+		if(jedis!=null){
 			System.out.println("slave redis creat success!");
 		}
 	}
@@ -168,5 +174,31 @@ public class JedisToolTest {
 		Customer customer=new Customer();
 		Jedis jedis=JedisTool.getJedis();
 	}
+	
+	
+	/**
+	 * 
+	 * testDistribute
+	 * void
+	 * woow
+	 * TODO		开启两个不同端口的Jedis服务器，测试ShardedJedis
+	 * 			此处本希望通过ShardJedis存入Redis，在分别通过两个Jedis来取出来，实验证明Jedis取出来null
+	 * 			择机再行完善
+	 */
+	@Test
+	public void testDistribute(){
+		ArrayList<JedisShardInfo> shards=new ArrayList<JedisShardInfo>();
+		shards.add(new JedisShardInfo("127.0.0.1",6379));
+		shards.add(new JedisShardInfo("127.0.0.1",6380));
+		ShardedJedis shardedJedis=new ShardedJedis(shards);
+		String time=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.EEE").format(new Date(System.currentTimeMillis()));
+		shardedJedis.set("time", time);
+		System.out.println(time);
+//		Jedis jedis79=JedisTool.getJedisPool(6379).getResource();
+//		Jedis jedis80=JedisTool.getJedisPool(6380).getResource();
+//		System.out.println("Jedis-6379:"+jedis79.get("time")+"\nJedis-6380:"+jedis80.get("time"));
+		System.out.println("sharedJedis-time="+shardedJedis.get("time"));
+	}
+	
 
 }
