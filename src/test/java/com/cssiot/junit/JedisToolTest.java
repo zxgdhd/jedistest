@@ -8,8 +8,10 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import com.cssiot.redis.Customer;
+import com.cssiot.entity.Company;
+import com.cssiot.entity.Customer;
 import com.cssiot.redis.JedisTool;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -200,5 +202,38 @@ public class JedisToolTest {
 		System.out.println("sharedJedis-time="+shardedJedis.get("time"));
 	}
 	
+	/**
+	 * @throws InvalidProtocolBufferException
+	 * testProtoBuf
+	 * void
+	 * woow
+	 * TODO		简单测试redis存储protobuf编码的对象，每一个proto文件对应一个java文件，文件中定义的message在java文件中
+	 * 			以静态内部类的形式存在，可重复字段（repeated）对应类为com.google.protobuf.Lazy****ArrayList.EMPTY，
+	 * 			在protobuf中Map等第三方提供的类又该如何表示呢？
+	 * 
+	 * 生成java文件命令：
+	 * 		--proto_path：proto文件存放的路径
+	 * 		--java_out：生成java文件的目标路径，在proto文件中配置了"option java_package="包名""
+	 * 			后设置文件输出路径为java文件根路径，java文件自动生成到对应包下
+	 * 		最后是proto文件名（全路径名，相对--proto_path目录找不到proto文件）
+	 * 
+	 * 
+	 * protoc --proto_path=/home/woow/wp/jedistool/src/main/java/com/cssiot/proto/ 
+	 * --java_out=/home/woow/wp/jedistool/src/main/java/ 
+	 * /home/woow/wp/jedistool/src/main/java/com/cssiot/proto/Company.proto
+	 */
+	@Test
+	public void testProtoBuf() throws InvalidProtocolBufferException{
+		Company.innerClass innner=Company.innerClass.newBuilder().setRegistrationNum("440301112071157")
+				.setCompanyName("深圳市奇倍翔").setCompanyAddress("深圳市")
+				.addCompanyStaff("胡*珍").addCompanyStaff("邹*群").build();
+		System.out.println("The innerClass toString is "+innner.toString());
+		byte[] innerByte=innner.toByteArray();
+		Jedis jedis=JedisTool.getJedis();
+		jedis.set("inner".getBytes(),innerByte);
+		System.out.println("\nGet form redis innerClass is "
+		+Company.innerClass.parseFrom(jedis.get("inner".getBytes())).toString());
+	}
+
 
 }

@@ -1,4 +1,4 @@
-package com.cssiot.redis;
+package com.cssiot.entity;
 
 import java.io.Serializable;
 
