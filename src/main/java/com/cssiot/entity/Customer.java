@@ -27,7 +27,7 @@ public class Customer implements Serializable {
 	}
 	
 	
-	public Customer() {
+	public Customer(Boolean isInit) {
 		this.cusId = System.currentTimeMillis()%1e6+"";
 		this.cusName = "嘿嘿嘿";
 		this.cusNum = "nameTime="+System.nanoTime();
@@ -42,6 +42,14 @@ public class Customer implements Serializable {
 		cusFeatures.put("hair", "black");
 		cusFeatures.put("eyes", "blue");
 		cusFeatures.put("height", "180cm");
+	}
+	
+	
+
+
+	public Customer() {
+		super();
+		// TODO Auto-generated constructor stub
 	}
 
 
@@ -81,6 +89,14 @@ public class Customer implements Serializable {
 	public void setCusFeatures(Map<String, String> cusFeatures) {
 		this.cusFeatures = cusFeatures;
 	}
+
+
+	@Override
+	public String toString() {
+		return "Customer [cusId=" + cusId + ", cusName=" + cusName + ", cusNum=" + cusNum + ", cusAge=" + cusAge
+				+ ", cards=" + cards + ", cusFeatures=" + cusFeatures + "]";
+	}
+	
 	
 	
 }

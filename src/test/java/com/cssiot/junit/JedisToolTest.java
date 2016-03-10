@@ -11,6 +11,10 @@ import org.junit.Test;
 import com.cssiot.entity.Company;
 import com.cssiot.entity.Customer;
 import com.cssiot.redis.JedisTool;
+import com.dyuproject.protostuff.LinkedBuffer;
+import com.dyuproject.protostuff.ProtobufIOUtil;
+import com.dyuproject.protostuff.Schema;
+import com.dyuproject.protostuff.runtime.RuntimeSchema;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import redis.clients.jedis.Jedis;
@@ -233,6 +237,31 @@ public class JedisToolTest {
 		jedis.set("inner".getBytes(),innerByte);
 		System.out.println("\nGet form redis innerClass is "
 		+Company.innerClass.parseFrom(jedis.get("inner".getBytes())).toString());
+	}
+	
+	
+	/**
+	 * 
+	 * testProtoStuff
+	 * void
+	 * woow
+	 * TODO		小试protostuff，简单将对象序列化反序列化，在protostuff中还有pipe相关方法
+	 * 			容后再试，并整理出工具类
+	 */
+	@Test
+	public void testProtoStuff(){
+		Customer customer = new Customer(true);
+		LinkedBuffer linkedBuffer=LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
+		Schema schema = RuntimeSchema.createFrom(Customer.class);
+		System.out.println("customer:"+customer.toString());
+		byte[] customerByte = ProtobufIOUtil.toByteArray(customer, schema, linkedBuffer);
+		Jedis jedis=JedisTool.getJedis();
+		jedis.set("customer".getBytes(), customerByte);
+		byte[] customerByteFromJedis=jedis.get("customer".getBytes());
+		Customer cus1=new Customer();
+		ProtobufIOUtil.mergeFrom(customerByteFromJedis, cus1, schema);
+		System.out.println("customer from jedis:"+cus1);
+		
 	}
 
 
